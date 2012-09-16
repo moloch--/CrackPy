@@ -15,7 +15,7 @@
 class HashAlgorithm {
 
 public:
-	virtual std::string hexdigest(std::string);
+	virtual std::string hexdigest(std::string&) const = 0;
 };
 
 #endif /* HASHALGORITHM_H_ */

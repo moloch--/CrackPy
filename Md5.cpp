@@ -15,7 +15,7 @@ Md5::~Md5() {
 	/* Blank */
 }
 
-std::string hexdigest(std::string preimage) {
+std::string Md5::hexdigest(std::string& preimage) const {
 	unsigned char digest[MD5_DIGEST_LENGTH];
 	char hexdigest[MD5_STRING_LENGTH + 1];
 	const char* data = preimage.c_str();

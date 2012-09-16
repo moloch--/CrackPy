@@ -4,26 +4,39 @@
  *      Author: moloch
  */
 
-#include <boost/python.hpp>
 #include <python2.7/Python.h>
+#include <boost/python.hpp>
+#include <vector>
+#include <string>
+#include <map>
 
 #include "CrackingEngine.h"
+#include "Md5.h"
 
 /* Python __init__ function */
 void python_init() {
 	NULL;
 }
 
-boost::python::dict md5_list(unsigned int len, boost::python::list& ls) {
-
-	for (unsigned int index = 0; index < len; ++index) {
-		std::string data = boost::python::extract<std::string>(ls[index]);
-	}
+boost::python::dict md5_list(boost::python::list& hashList,
+		boost::python::list& wordList, unsigned int threads, bool debug) {
+	CrackingEngine* engine = new CrackingEngine();
+	engine->setHashes(hashList);
+	engine->setWords(wordList);
+	Md5* md5 = new Md5();
+	engine->setAlgorithm(md5);
+	engine->setThreads(threads);
+	return engine->crack();
 }
 
 /* Python interface */
 BOOST_PYTHON_MODULE(CrackPy) {
 	using namespace boost::python;
-	def("md5", md5_list, args("len", "hashes"));
+	def(
+		"md5",
+		md5_list,
+		(arg("hashList"), arg("wordList"), arg("threads") = 1, arg("debug")= false),
+		"doc-string"
+	);
 	def("CrackPy", python_init);
 }

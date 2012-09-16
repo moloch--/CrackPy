@@ -19,7 +19,7 @@
 
 #include "HashAlgorithm.h"
 
-typedef std::map<std::string, std::string> Results;
+typedef boost::python::dict Results;
 typedef std::queue <std::string> Queue;
 
 class CrackingEngine {
@@ -27,21 +27,21 @@ class CrackingEngine {
 public:
 	CrackingEngine();
 	virtual ~CrackingEngine();
-	Results crack(std::vector <std::string>, std::vector <std::string>, HashAlgorithm);
-	void setThreads(unsigned int threads);
+	Results crack();
+	void setThreads(unsigned int threadCount);
+	void setWords(boost::python::list& words);
+	void setHashes(boost::python::list& hashes);
+	void setAlgorithm(HashAlgorithm* algorithm);
 
 private:
-	void setWords(std::vector <std::string> words);
-	void setHashes(std::vector <std::string> hashes);
-	void setAlgorithm(HashAlgorithm algorithm);
 	void workerThread();
 
-	bool debug;
 	unsigned int threadCount;
-	unsigned int rounds;
-	HashAlgorithm algorithm;
+	bool debug;
+	HashAlgorithm* algorithm;
 	PyThreadState* py_thread_state;
 	boost::thread_group threadGroup;
+	std::vector <std::string>* hashes;
 	Queue* wordListQueue;
 	boost::mutex* wordListMutex;
 	Results* results;

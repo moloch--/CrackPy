@@ -17,12 +17,13 @@
 
 const unsigned int MD5_STRING_LENGTH = (MD5_DIGEST_LENGTH * 2);
 
-class Md5: HashAlgorithm {
+class Md5: public HashAlgorithm {
+
 public:
 	Md5();
 	virtual ~Md5();
 
-	std::string hexdigest(std::string preimage);
+	std::string hexdigest(std::string&) const;
 };
 
 #endif /* MD5_H_ */
