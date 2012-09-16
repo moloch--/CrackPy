@@ -15,6 +15,7 @@
 class HashAlgorithm {
 
 public:
+	virtual const std::string getName() = 0;
 	virtual std::string hexdigest(std::string&) const = 0;
 };
 

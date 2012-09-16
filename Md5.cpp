@@ -15,14 +15,19 @@ Md5::~Md5() {
 	/* Blank */
 }
 
+const std::string Md5::getName() {
+	return NAME;
+}
+
 std::string Md5::hexdigest(std::string& preimage) const {
 	unsigned char digest[MD5_DIGEST_LENGTH];
-	char hexdigest[MD5_STRING_LENGTH + 1];
+	char hexadecimal[3]; // Hex digit + null
 	const char* data = preimage.c_str();
+	std::ostringstream stringBuilder;
 	MD5((const unsigned char*) data, strlen(data), digest);
-	for (int index = 0; index < MD5_DIGEST_LENGTH; ++index) {
-		sprintf(hexdigest + index, "%02x", digest[index]);
+	for (unsigned int index = 0; index < MD5_DIGEST_LENGTH; ++index) {
+		sprintf(hexadecimal, "%02x", digest[index]);
+		stringBuilder << hexadecimal;
 	}
-	hexdigest[MD5_STRING_LENGTH] = '\0';
-	return std::string(hexdigest);
+	return stringBuilder.str();
 }
