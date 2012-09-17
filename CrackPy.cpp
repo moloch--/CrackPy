@@ -69,12 +69,12 @@ boost::python::dict toPythonDict(std::map<std::string, std::string> stringMap) {
 	return dictionary;
 }
 
-boost::python::dict md5_list(boost::python::list hashList,
-		boost::python::list wordList, unsigned int threads, bool debug) {
+boost::python::dict crackpy(std::string hashType, boost::python::list& hashList,
+		boost::python::list& wordList, unsigned int threads, bool debug) {
 	signal(SIGSEGV, handler); // Register segfault handler
 	std::vector <std::string> hashes = toStringVector(hashList);
 	std::queue <std::string>* words = toStringQueue(wordList);
-	CrackingEngine* engine = new CrackingEngine("MD5");
+	CrackingEngine* engine = new CrackingEngine(hashType);
 	engine->setDebug(debug);
 	engine->setHashes(hashes);
 	engine->setWords(words);
@@ -83,38 +83,21 @@ boost::python::dict md5_list(boost::python::list hashList,
 	delete engine;
 	delete words;
 	return toPythonDict(resultMap);
+}
+
+boost::python::dict md5_list(boost::python::list hashList,
+		boost::python::list wordList, unsigned int threads, bool debug) {
+	return crackpy("MD5", hashList, wordList, threads, debug);
 }
 
 boost::python::dict md4_list(boost::python::list hashList,
 		boost::python::list wordList, unsigned int threads, bool debug) {
-	signal(SIGSEGV, handler); // Register segfault handler
-	std::vector <std::string> hashes = toStringVector(hashList);
-	std::queue <std::string>* words = toStringQueue(wordList);
-	CrackingEngine* engine = new CrackingEngine("MD4");
-	engine->setDebug(debug);
-	engine->setHashes(hashes);
-	engine->setWords(words);
-	engine->setThreads(threads);
-	std::map<std::string, std::string> resultMap = engine->crack();
-	delete engine;
-	delete words;
-	return toPythonDict(resultMap);
+	return crackpy("MD4", hashList, wordList, threads, debug);
 }
 
 boost::python::dict sha1_list(boost::python::list hashList,
 		boost::python::list wordList, unsigned int threads, bool debug) {
-	signal(SIGSEGV, handler); // Register segfault handler
-	std::vector <std::string> hashes = toStringVector(hashList);
-	std::queue <std::string>* words = toStringQueue(wordList);
-	CrackingEngine* engine = new CrackingEngine("SHA1");
-	engine->setDebug(debug);
-	engine->setHashes(hashes);
-	engine->setWords(words);
-	engine->setThreads(threads);
-	std::map<std::string, std::string> resultMap = engine->crack();
-	delete engine;
-	delete words;
-	return toPythonDict(resultMap);
+	return crackpy("SHA1", hashList, wordList, threads, debug);
 }
 
 /* Python interface */
@@ -130,13 +113,13 @@ BOOST_PYTHON_MODULE(CrackPy) {
 		"md4",
 		md4_list,
 		(arg("hashList"), arg("wordList"), arg("threads") = 1, arg("debug")= false),
-		"Cracks a list of Md5 hashes."
+		"Cracks a list of Md4 hashes."
 	);
 	def(
 		"sha1",
 		sha1_list,
 		(arg("hashList"), arg("wordList"), arg("threads") = 1, arg("debug")= false),
-		"Cracks a list of Md5 hashes."
+		"Cracks a list of Sha1 hashes."
 	);
 	def("CrackPy", python_init);
 }
