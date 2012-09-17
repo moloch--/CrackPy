@@ -11,27 +11,13 @@
 #include <string>
 #include <map>
 
-#include <execinfo.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <stdio.h>
-
 #include "CrackingEngine.h"
 
 void python_init() {
 	/* Python __init__ function (required) */
 }
 
-/* Segfault stack traces */
-void handler(int sig) {
-	void *array[10];
-	size_t size;
-	size = backtrace(array, 10);
-	fprintf(stderr, "Error: signal %d:\n", sig);
-	backtrace_symbols_fd(array, size, 2);
-	exit(1);
-}
-
+/* Convert Python list to C++ vector */
 std::vector <std::string> toStringVector(boost::python::list& ls) {
 	std::vector <std::string> data;
 	for (int index = 0; index < boost::python::len(ls); ++index) {
@@ -41,6 +27,7 @@ std::vector <std::string> toStringVector(boost::python::list& ls) {
 	return data;
 }
 
+/* Convert C++ map to Python dictionary */
 boost::python::dict toPythonDict(std::map<std::string, std::string> stringMap) {
 	std::map<std::string, std::string>::iterator iter;
 	boost::python::dict dictionary;
@@ -52,7 +39,6 @@ boost::python::dict toPythonDict(std::map<std::string, std::string> stringMap) {
 
 boost::python::dict md5_list(boost::python::list hashList,
 		boost::python::list wordList, unsigned int threads, bool debug) {
-	signal(SIGSEGV, handler);
 	std::vector <std::string> hashes = toStringVector(hashList);
 	std::vector <std::string> words = toStringVector(wordList);
 	CrackingEngine* engine = new CrackingEngine("MD5");
@@ -62,7 +48,6 @@ boost::python::dict md5_list(boost::python::list hashList,
 	engine->setThreads(threads);
 	std::map<std::string, std::string> resultMap = engine->crack();
 	delete engine;
-	std::cout << INFO << "Cracking completed." << std::endl;
 	return toPythonDict(resultMap);
 }
 

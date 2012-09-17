@@ -8,7 +8,6 @@
 #include "CrackingEngine.h"
 
 CrackingEngine::CrackingEngine(std::string hashType): threadCount(1), debug(false) {
-	std::cout << WARN << "Constructor called!" << std::endl;
 	pyThreadState = PyEval_SaveThread();
 	wordListQueue = new Queue();
 	wordListMutex = new boost::mutex();
@@ -21,9 +20,6 @@ CrackingEngine::CrackingEngine(std::string hashType): threadCount(1), debug(fals
 }
 
 CrackingEngine::~CrackingEngine() {
-	if (debug) {
-		std::cout << WARN << "De-constructor called!" << std::endl;
-	}
 	delete wordListQueue;
 	delete wordListMutex;
 	delete results;
@@ -110,13 +106,7 @@ void CrackingEngine::workerThread(int threadId, std::vector<std::string> hashLis
 		std::string word = wordListQueue->front();
 		wordListQueue->pop();
 		wlMutex.unlock();
-		if (debug) {
-			threadSay(threadId, "Got word: " + word);
-		}
 		std::string digest = algorithm->hexdigest(word);
-		if (debug) {
-			threadSay(threadId, "Got digest: " + digest);
-		}
 		if (std::find(hashList.begin(), hashList.end(), digest) != hashList.end()) {
 			threadSay(threadId, "Found a match: " + digest + " -> " + word);
 			boost::mutex::scoped_lock resMutex((*resultsMutex));
@@ -124,7 +114,7 @@ void CrackingEngine::workerThread(int threadId, std::vector<std::string> hashLis
 			resMutex.unlock();
 		}
 	}
-	threadSay(threadId, "Complete.");
+	threadSay(threadId, "No more work, exiting.");
 }
 
 void CrackingEngine::threadSay(int threadId, std::string message) {

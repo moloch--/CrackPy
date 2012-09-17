@@ -10,7 +10,7 @@ TARGET = CrackPy
 
 OBJS = Md5.o HashFactory.o CrackingEngine.o CrackPy.o
 OPTIMIZATION = -O3
-DEBUG = -g -rdynamic
+#DEBUG = -g -rdynamic
 CFLAGS = -Wall -ansi $(DEBUG) $(OPTIMIZATION) -c -fPIC
 LFLAGS = -Wall -ansi -filt $(OPTIMIZATION)
 LIBS = -L/lib -L/usr/lib -lssl -lboost_thread
