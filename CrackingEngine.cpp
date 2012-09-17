@@ -108,13 +108,17 @@ void CrackingEngine::workerThread(int threadId, std::vector<std::string> hashLis
 		wlMutex.unlock();
 		std::string digest = algorithm->hexdigest(word);
 		if (std::find(hashList.begin(), hashList.end(), digest) != hashList.end()) {
-			threadSay(threadId, "Found a match: " + digest + " -> " + word);
+			if (debug) {
+				threadSay(threadId, "Found a match: " + digest + " -> " + word);
+			}
 			boost::mutex::scoped_lock resMutex((*resultsMutex));
 			(*results)[digest] = word;
 			resMutex.unlock();
 		}
 	}
-	threadSay(threadId, "No more work, exiting.");
+	if (debug) {
+		threadSay(threadId, "No more work, exiting.");
+	}
 }
 
 void CrackingEngine::threadSay(int threadId, std::string message) {
