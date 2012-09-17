@@ -8,8 +8,6 @@
 #ifndef HASHFACTORY_H_
 #define HASHFACTORY_H_
 
-#include <python2.7/Python.h>
-#include <boost/python.hpp>
 #include <string>
 
 #include "HashAlgorithm.h"

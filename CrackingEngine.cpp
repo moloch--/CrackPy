@@ -44,7 +44,9 @@ Results CrackingEngine::crack() {
 			threadGroup.create_thread(boost::bind(&CrackingEngine::workerThread, this, threadId, hashes));
 		}
 		if (debug) {
+			stdoutMutex->lock();
 			std::cout << INFO << "Waiting for worker threads to finish ..." << std::endl;
+			stdoutMutex->unlock();
 		}
 		threadGroup.join_all();
 		if (debug) {
@@ -98,33 +100,40 @@ void CrackingEngine::workerThread(int threadId, std::vector<std::string> hashLis
 	if (debug) {
 		threadSay(threadId, "Starting up!");
 	}
-	boost::mutex::scoped_lock ftryMutex((*factoryMutex));
+	factoryMutex->lock();
 	HashAlgorithm* algorithm = hashFactory->getInstance(hashType);
-	ftryMutex.unlock();
-	while(!wordListQueue->empty()) {
-		boost::mutex::scoped_lock wlMutex((*wordListMutex));
+	factoryMutex->unlock();
+	bool working = true;
+	while(working) {
+		wordListMutex->lock();
 		std::string word = wordListQueue->front();
 		wordListQueue->pop();
-		wlMutex.unlock();
+		wordListMutex->unlock();
 		std::string digest = algorithm->hexdigest(word);
 		if (std::find(hashList.begin(), hashList.end(), digest) != hashList.end()) {
 			if (debug) {
 				threadSay(threadId, "Found a match: " + digest + " -> " + word);
 			}
-			boost::mutex::scoped_lock resMutex((*resultsMutex));
+			resultsMutex->lock();
 			(*results)[digest] = word;
-			resMutex.unlock();
+			resultsMutex->unlock();
 		}
+		wordListMutex->lock();
+		if (wordListQueue->empty()) {
+			working = false;
+		}
+		wordListMutex->unlock();
 	}
+	delete algorithm;
 	if (debug) {
 		threadSay(threadId, "No more work, exiting.");
 	}
 }
 
 void CrackingEngine::threadSay(int threadId, std::string message) {
-	boost::mutex::scoped_lock ioMutex((*stdoutMutex));
+	stdoutMutex->lock();
 	std::cout << INFO << "(Thread #" << threadId <<"): ";
 	std::cout << message << std::endl;
-	ioMutex.unlock();
+	stdoutMutex->unlock();
 }
 

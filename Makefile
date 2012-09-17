@@ -10,7 +10,7 @@ TARGET = CrackPy
 
 OBJS = Md5.o HashFactory.o CrackingEngine.o CrackPy.o
 OPTIMIZATION = -O3
-#DEBUG = -g -rdynamic
+DEBUG = -g -rdynamic
 CFLAGS = -Wall -ansi $(DEBUG) $(OPTIMIZATION) -c -fPIC
 LFLAGS = -Wall -ansi -filt $(OPTIMIZATION)
 LIBS = -L/lib -L/usr/lib -lssl -lboost_thread
@@ -24,7 +24,7 @@ Md5.o: HashAlgorithm.h Md5.h Md5.cpp
 	g++ $(CFLAGS) -I$(BOOST_INC) -c Md5.cpp -lssl
 
 HashFactory.o: HashFactory.h HashFactory.cpp HashAlgorithm.h 
-	g++ $(CFLAGS) -I$(PYTHON) -I$(BOOST_INC) -c HashFactory.cpp
+	g++ $(CFLAGS) -I$(BOOST_INC) -c HashFactory.cpp
 
 CrackingEngine.o: CrackingEngine.h CrackingEngine.cpp
 	g++ $(CFLAGS) -I$(PYTHON) -I$(BOOST_INC) -c CrackingEngine.cpp -lboost_thread

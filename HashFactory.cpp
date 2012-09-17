@@ -20,6 +20,5 @@ HashAlgorithm* HashFactory::getInstance(std::string name) {
 	if (name == "MD5") {
 		return new Md5();
 	}
-	PyErr_SetString(PyExc_ValueError, "Invalid hash type.");
-	throw boost::python::error_already_set();
+	throw "Algorithm not supported.";
 }

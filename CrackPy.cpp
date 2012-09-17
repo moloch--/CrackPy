@@ -11,10 +11,31 @@
 #include <string>
 #include <map>
 
+#include <execinfo.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "CrackingEngine.h"
 
+const unsigned int TRACE_SIZE = 10;
+
+/* Segfault handler */
+void handler(int sig) {
+	void *trace[TRACE_SIZE];
+	size_t size;
+	size = backtrace(trace, TRACE_SIZE);
+	fprintf(stderr, "Error: signal %d:\n", sig);
+	backtrace_symbols_fd(trace, size, 2);
+	exit(1);
+}
+
+/* Python __init__ function (required) */
 void python_init() {
-	/* Python __init__ function (required) */
+	if(!Py_IsInitialized()) {
+		Py_Initialize();
+		PyEval_InitThreads();
+	}
 }
 
 /* Convert Python list to C++ vector */
@@ -39,6 +60,7 @@ boost::python::dict toPythonDict(std::map<std::string, std::string> stringMap) {
 
 boost::python::dict md5_list(boost::python::list hashList,
 		boost::python::list wordList, unsigned int threads, bool debug) {
+	signal(SIGSEGV, handler); // Register segfault handler
 	std::vector <std::string> hashes = toStringVector(hashList);
 	std::vector <std::string> words = toStringVector(wordList);
 	CrackingEngine* engine = new CrackingEngine("MD5");
