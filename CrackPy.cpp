@@ -12,7 +12,6 @@
 #include <map>
 
 #include "CrackingEngine.h"
-#include "Md5.h"
 
 /* Python __init__ function */
 void python_init() {
@@ -21,16 +20,13 @@ void python_init() {
 
 boost::python::dict md5_list(boost::python::list hashList,
 		boost::python::list wordList, unsigned int threads, bool debug) {
-	CrackingEngine* engine = new CrackingEngine();
+	CrackingEngine* engine = new CrackingEngine("MD5");
 	engine->setDebug(debug);
 	engine->setHashes(hashList);
 	engine->setWords(wordList);
-	Md5* md5 = new Md5();
-	engine->setAlgorithm(md5);
 	engine->setThreads(threads);
 	boost::python::dict results = engine->crack();
 	delete engine;
-	delete md5;
 	std::cout << "Cracking completed." << std::endl;
 	return results;
 }

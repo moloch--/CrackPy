@@ -7,15 +7,18 @@
 
 #include "CrackingEngine.h"
 
-CrackingEngine::CrackingEngine(): threadCount(1), debug(false) {
+CrackingEngine::CrackingEngine(std::string hashType): threadCount(1), debug(false) {
 	std::cout << WARN << "Constructor called!" << std::endl;
-	py_thread_state = PyEval_SaveThread();
+	pyThreadState = PyEval_SaveThread();
 	wordListQueue = new Queue();
 	wordListMutex = new boost::mutex();
 	results = new Results();
 	resultsMutex = new boost::mutex();
 	hashes = new std::vector <std::string>();
 	stdoutMutex = new boost::mutex();
+	hashFactory = new HashFactory();
+	factoryMutex =  new boost::mutex();
+	this->hashType = hashType;
 }
 
 CrackingEngine::~CrackingEngine() {
@@ -28,8 +31,10 @@ CrackingEngine::~CrackingEngine() {
 	delete resultsMutex;
 	delete hashes;
 	delete stdoutMutex;
-	PyEval_RestoreThread(py_thread_state);
-	py_thread_state = NULL;
+	delete hashFactory;
+	delete factoryMutex;
+	PyEval_RestoreThread(pyThreadState);
+	pyThreadState = NULL;
 }
 
 /*
@@ -45,25 +50,13 @@ Results CrackingEngine::crack() {
 			threadGroup.create_thread(boost::bind(&CrackingEngine::workerThread, this, threadId));
 		}
 		if (debug) {
-			boost::mutex::scoped_lock ioMutex((*stdoutMutex));
 			std::cout << INFO << "Waiting for worker threads to finish ..." << std::endl;
-			ioMutex.unlock();
 		}
 		threadGroup.join_all();
 		if (debug) {
 			std::cout << INFO << "All worker threads completed work." << std::endl;
 		}
 	}
-//	boost::python::list keys = results->keys();
-//	std::cout << "=================================" << std::endl;
-//	for (int index = 0; index < boost::python::len(keys); ++index) {
-//		std::string key = boost::python::extract<std::string>(keys[index]);
-//		std::cout << " Hash: " << key << std::endl;
-//		std::string value = boost::python::extract<std::string>(results->get(key));
-//		std::cout << " Plain-text: " << value << std::endl;
-//		std::cout << "=================================" << std::endl;
-//	}
-//	std::cout.flush();
 	return (*results);
 }
 
@@ -94,9 +87,6 @@ void CrackingEngine::setWords(boost::python::list& wordList) {
 	}
 	for (unsigned int index = 0; index < boost::python::len(wordList); ++index) {
 		std::string word = boost::python::extract<std::string>(wordList[index]);
-		if (debug) {
-			std::cout << INFO << "Adding: " << word << std::endl;
-		}
 		wordListQueue->push(word);
 	}
 }
@@ -116,16 +106,6 @@ void CrackingEngine::setHashes(boost::python::list& hashList) {
 }
 
 /*
- * Sets the type of algorithm to use for cracking
- */
-void CrackingEngine::setAlgorithm(HashAlgorithm* algoPtr) {
-	if (debug) {
-		std::cout << INFO << "Set algorithm: " << algoPtr->getName() << std::endl;
-	}
-	this->algorithm = algoPtr;
-}
-
-/*
  * Executed as separate thread; computes hash of a word in the wordList
  * and compares the result to the hashes we're looking for, saves results.
  */
@@ -133,6 +113,9 @@ void CrackingEngine::workerThread(int threadId) {
 	if (debug) {
 		threadSay(threadId, "Starting up!");
 	}
+	boost::mutex::scoped_lock factMutex((*factoryMutex));
+	HashAlgorithm* algorithm = hashFactory->getInstance(hashType);
+	factMutex.unlock();
 	while(!wordListQueue->empty()) {
 		boost::mutex::scoped_lock wlMutex((*wordListMutex));
 		std::string word = wordListQueue->front();
