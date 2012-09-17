@@ -22,7 +22,7 @@
 #include "HashAlgorithm.h"
 #include "HashFactory.h"
 
-typedef boost::python::dict Results;
+typedef std::map <std::string, std::string> Results;
 typedef std::queue <std::string> Queue;
 
 class CrackingEngine {
@@ -33,21 +33,21 @@ public:
 	Results crack();
 	void setThreads(unsigned int threadCount);
 	void setDebug(bool debug);
-	void setWords(boost::python::list& words);
-	void setHashes(boost::python::list& hashes);
+	void setWords(std::vector<std::string>& words);
+	void setHashes(std::vector<std::string>& hashes);
 
 private:
 	void setAlgorithm(std::string hashType);
-	void workerThread(int threadId);
+	void workerThread(int threadId, std::vector<std::string> hashes);
 	void threadSay(int threadId, std::string message);
 
 	unsigned int threadCount;
 	bool debug;
 	std::string hashType;
+	std::vector <std::string> hashes;
 	HashFactory* hashFactory;
 	boost::mutex* factoryMutex;
 	PyThreadState* pyThreadState;
-	std::vector <std::string>* hashes;
 	Queue* wordListQueue;
 	boost::mutex* wordListMutex;
 	Results* results;
