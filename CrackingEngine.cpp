@@ -14,8 +14,7 @@ CrackingEngine::CrackingEngine(std::string hashType): threadCount(1), debug(fals
 	results = new Results();
 	resultsMutex = new boost::mutex();
 	stdoutMutex = new boost::mutex();
-	hashFactory = new HashFactory();
-	factoryMutex =  new boost::mutex();
+	hashesMutex = new boost::mutex();
 	this->hashType = hashType;
 }
 
@@ -25,8 +24,7 @@ CrackingEngine::~CrackingEngine() {
 	delete results;
 	delete resultsMutex;
 	delete stdoutMutex;
-	delete hashFactory;
-	delete factoryMutex;
+	delete hashesMutex;
 	PyEval_RestoreThread(pyThreadState);
 	pyThreadState = NULL;
 }
@@ -41,7 +39,7 @@ Results CrackingEngine::crack() {
 	if (!hashes.empty()) {
 		boost::thread_group threadGroup;
 		for (unsigned int threadId = 0; threadId < threadCount; ++threadId) {
-			threadGroup.create_thread(boost::bind(&CrackingEngine::workerThread, this, threadId, hashes));
+			threadGroup.create_thread(boost::bind(&CrackingEngine::workerThread, this, threadId));
 		}
 		if (debug) {
 			stdoutMutex->lock();
@@ -96,14 +94,12 @@ void CrackingEngine::setHashes(std::vector<std::string>& hashes) {
  * Executed as separate thread; computes hash of a word in the wordList
  * and compares the result to the hashes we're looking for, saves results.
  */
-void CrackingEngine::workerThread(int threadId, std::vector<std::string> hashList) {
-	if (debug) {
-		threadSay(threadId, "Starting up!");
-	}
-	factoryMutex->lock();
-	HashAlgorithm* algorithm = hashFactory->getInstance(hashType);
-	factoryMutex->unlock();
+void CrackingEngine::workerThread(int threadId) {
+	hashesMutex->lock();
+	std::vector <std::string> hashList = hashes;
+	hashesMutex->unlock();
 	bool working = true;
+	HashAlgorithm* algorithm = HashFactory::getInstance(hashType);
 	while(working) {
 		wordListMutex->lock();
 		std::string word = wordListQueue->front();
@@ -112,7 +108,10 @@ void CrackingEngine::workerThread(int threadId, std::vector<std::string> hashLis
 		std::string digest = algorithm->hexdigest(word);
 		if (std::find(hashList.begin(), hashList.end(), digest) != hashList.end()) {
 			if (debug) {
-				threadSay(threadId, "Found a match: " + digest + " -> " + word);
+				stdoutMutex->lock();
+				std::cout << INFO << "(Thread #" << threadId <<"): ";
+				std::cout << "Found match; " << digest << " -> " << word << std::endl;
+				stdoutMutex->unlock();
 			}
 			resultsMutex->lock();
 			(*results)[digest] = word;
@@ -126,14 +125,11 @@ void CrackingEngine::workerThread(int threadId, std::vector<std::string> hashLis
 	}
 	delete algorithm;
 	if (debug) {
-		threadSay(threadId, "No more work, exiting.");
+		stdoutMutex->lock();
+		std::cout << INFO << "(Thread #" << threadId <<"): ";
+		std::cout << "No more work, exiting." << std::endl;
+		stdoutMutex->unlock();
 	}
 }
 
-void CrackingEngine::threadSay(int threadId, std::string message) {
-	stdoutMutex->lock();
-	std::cout << INFO << "(Thread #" << threadId <<"): ";
-	std::cout << message << std::endl;
-	stdoutMutex->unlock();
-}
 

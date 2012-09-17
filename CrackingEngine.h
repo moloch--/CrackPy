@@ -38,21 +38,20 @@ public:
 
 private:
 	void setAlgorithm(std::string hashType);
-	void workerThread(int threadId, std::vector<std::string> hashes);
+	void workerThread(int threadId);
 	void threadSay(int threadId, std::string message);
 
 	unsigned int threadCount;
 	bool debug;
 	std::string hashType;
 	std::vector <std::string> hashes;
-	HashFactory* hashFactory;
-	boost::mutex* factoryMutex;
 	PyThreadState* pyThreadState;
 	Queue* wordListQueue;
 	boost::mutex* wordListMutex;
 	Results* results;
 	boost::mutex* resultsMutex;
 	boost::mutex* stdoutMutex;
+	boost::mutex* hashesMutex;
 };
 
 #endif /* CRACKINGENGINE_H_ */
