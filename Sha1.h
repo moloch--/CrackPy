@@ -1,14 +1,14 @@
 /*
- * Md5.h
+ * Sha1.h
  *
- *  Created on: Sep 4, 2012
+ *  Created on: Sep 16, 2012
  *      Author: moloch
  */
 
-#ifndef MD5_H_
-#define MD5_H_
+#ifndef SHA1_H_
+#define SHA1_H_
 
-#include <openssl/md5.h>
+#include <openssl/sha.h>
 #include <iostream>
 #include <sstream>
 #include <cstring>
@@ -17,14 +17,16 @@
 
 #include "HashAlgorithm.h"
 
-class Md5: public HashAlgorithm {
+#define SHA1_DIGEST_LENGTH 20
+
+class Sha1: public HashAlgorithm {
 
 public:
-	Md5();
-	virtual ~Md5();
+	Sha1();
+	virtual ~Sha1();
 
 	const std::string getName();
 	std::string hexdigest(std::string&) const;
 };
 
-#endif /* MD5_H_ */
+#endif /* SHA1_H_ */

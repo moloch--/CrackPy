@@ -1,14 +1,14 @@
 /*
- * Md5.h
+ * Md4.h
  *
- *  Created on: Sep 4, 2012
+ *  Created on: Sep 16, 2012
  *      Author: moloch
  */
 
-#ifndef MD5_H_
-#define MD5_H_
+#ifndef MD4_H_
+#define MD4_H_
 
-#include <openssl/md5.h>
+#include <openssl/md4.h>
 #include <iostream>
 #include <sstream>
 #include <cstring>
@@ -17,14 +17,14 @@
 
 #include "HashAlgorithm.h"
 
-class Md5: public HashAlgorithm {
+class Md4: public HashAlgorithm {
 
 public:
-	Md5();
-	virtual ~Md5();
+	Md4();
+	virtual ~Md4();
 
 	const std::string getName();
 	std::string hexdigest(std::string&) const;
 };
 
-#endif /* MD5_H_ */
+#endif /* MD4_H_ */

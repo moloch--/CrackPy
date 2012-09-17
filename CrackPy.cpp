@@ -85,12 +85,56 @@ boost::python::dict md5_list(boost::python::list hashList,
 	return toPythonDict(resultMap);
 }
 
+boost::python::dict md4_list(boost::python::list hashList,
+		boost::python::list wordList, unsigned int threads, bool debug) {
+	signal(SIGSEGV, handler); // Register segfault handler
+	std::vector <std::string> hashes = toStringVector(hashList);
+	std::queue <std::string>* words = toStringQueue(wordList);
+	CrackingEngine* engine = new CrackingEngine("MD4");
+	engine->setDebug(debug);
+	engine->setHashes(hashes);
+	engine->setWords(words);
+	engine->setThreads(threads);
+	std::map<std::string, std::string> resultMap = engine->crack();
+	delete engine;
+	delete words;
+	return toPythonDict(resultMap);
+}
+
+boost::python::dict sha1_list(boost::python::list hashList,
+		boost::python::list wordList, unsigned int threads, bool debug) {
+	signal(SIGSEGV, handler); // Register segfault handler
+	std::vector <std::string> hashes = toStringVector(hashList);
+	std::queue <std::string>* words = toStringQueue(wordList);
+	CrackingEngine* engine = new CrackingEngine("SHA1");
+	engine->setDebug(debug);
+	engine->setHashes(hashes);
+	engine->setWords(words);
+	engine->setThreads(threads);
+	std::map<std::string, std::string> resultMap = engine->crack();
+	delete engine;
+	delete words;
+	return toPythonDict(resultMap);
+}
+
 /* Python interface */
 BOOST_PYTHON_MODULE(CrackPy) {
 	using namespace boost::python;
 	def(
 		"md5",
 		md5_list,
+		(arg("hashList"), arg("wordList"), arg("threads") = 1, arg("debug")= false),
+		"Cracks a list of Md5 hashes."
+	);
+	def(
+		"md4",
+		md4_list,
+		(arg("hashList"), arg("wordList"), arg("threads") = 1, arg("debug")= false),
+		"Cracks a list of Md5 hashes."
+	);
+	def(
+		"sha1",
+		sha1_list,
 		(arg("hashList"), arg("wordList"), arg("threads") = 1, arg("debug")= false),
 		"Cracks a list of Md5 hashes."
 	);

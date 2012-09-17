@@ -16,7 +16,7 @@ Md5::~Md5() {
 }
 
 const std::string Md5::getName() {
-	return NAME;
+	return "MD5";
 }
 
 std::string Md5::hexdigest(std::string& preimage) const {

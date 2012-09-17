@@ -19,6 +19,10 @@ HashFactory::~HashFactory() {
 HashAlgorithm* HashFactory::getInstance(std::string name) {
 	if (name == "MD5") {
 		return new Md5();
+	} else if (name == "MD4") {
+		return new Md4();
+	} else if (name == "SHA1") {
+		return new Sha1();
 	}
 	throw "Algorithm not supported.";
 }
