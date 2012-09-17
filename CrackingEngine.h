@@ -41,6 +41,7 @@ private:
 	void workerThread(int threadId);
 	void threadSay(int threadId, std::string message);
 
+	unsigned int solved;
 	unsigned int threadCount;
 	bool debug;
 	std::string hashType;

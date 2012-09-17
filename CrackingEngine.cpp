@@ -7,7 +7,7 @@
 
 #include "CrackingEngine.h"
 
-CrackingEngine::CrackingEngine(std::string hashType): threadCount(1), debug(false) {
+CrackingEngine::CrackingEngine(std::string hashType): solved(0), threadCount(1), debug(false) {
 	pyThreadState = PyEval_SaveThread();
 	wordListMutex = new boost::mutex();
 	results = new Results();
@@ -46,7 +46,7 @@ Results CrackingEngine::crack() {
 		}
 		threadGroup.join_all();
 		if (debug) {
-			std::cout << INFO << "All worker threads completed work." << std::endl;
+			std::cout << INFO << "All worker threads completed." << std::endl;
 		}
 	}
 	return (*results);
@@ -93,21 +93,26 @@ void CrackingEngine::workerThread(int threadId) {
 	hashesMutex->unlock();
 	HashAlgorithm* algorithm = HashFactory::getInstance(hashType);
 	std::string word;
+	int count = 0;
 	while(true) {
 		wordListMutex->lock();
-		if (wordListQueue->empty()) {
+		resultsMutex->lock();
+		if (wordListQueue->empty() || results->size() == hashList.size()) {
+			resultsMutex->unlock();
 			wordListMutex->unlock();
 			break;
 		} else {
+			resultsMutex->unlock();
 			word = wordListQueue->front();
 			wordListQueue->pop();
 			wordListMutex->unlock();
 		}
 		std::string digest = algorithm->hexdigest(word);
+		count++;
 		if (std::find(hashList.begin(), hashList.end(), digest) != hashList.end()) {
 			if (debug) {
 				stdoutMutex->lock();
-				std::cout << INFO << "[Thread #" << threadId <<"]: " << digest << " -> " << word << std::endl;
+				std::cout << INFO << "(Thread #" << threadId <<"): " << digest << " -> " << word << std::endl;
 				stdoutMutex->unlock();
 			}
 			resultsMutex->lock();
@@ -118,10 +123,10 @@ void CrackingEngine::workerThread(int threadId) {
 	delete algorithm;
 	if (debug) {
 		stdoutMutex->lock();
-		std::cout << INFO << "[Thread #" << threadId << "]: ";
-		std::cout << "No more work, exiting." << std::endl;
+		std::cout << INFO << "(Thread #" << threadId << "): Calculated " << count << " hash(es)." << std::endl;
 		stdoutMutex->unlock();
 	}
 }
+
 
 
