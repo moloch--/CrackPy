@@ -18,6 +18,6 @@ print 'done!'
 
 # Crack hashes
 start = datetime.now()
-results = CrackPy.md5(hashes, words, threads=2, debug=False)
+results = CrackPy.md5(hashes, words, threads=4, debug=False)
 print '[$] Analysis time:', datetime.now() - start
 print results

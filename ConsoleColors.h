@@ -2,7 +2,7 @@
  * consoleColors.h
  *
  *  Created on: Aug 14, 2011
- *      Author: Joe DeMesy
+ *      Author: moloch
  */
 
 #ifndef CONSOLECOLORS_H_

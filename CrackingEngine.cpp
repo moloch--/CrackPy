@@ -91,30 +91,29 @@ void CrackingEngine::workerThread(int threadId) {
 	hashesMutex->lock();
 	std::vector <std::string> hashList = hashes;
 	hashesMutex->unlock();
-	bool working = true;
 	HashAlgorithm* algorithm = HashFactory::getInstance(hashType);
-	while(working) {
+	std::string word;
+	while(true) {
 		wordListMutex->lock();
-		std::string word = wordListQueue->front();
-		wordListQueue->pop();
-		wordListMutex->unlock();
+		if (wordListQueue->empty()) {
+			wordListMutex->unlock();
+			break;
+		} else {
+			word = wordListQueue->front();
+			wordListQueue->pop();
+			wordListMutex->unlock();
+		}
 		std::string digest = algorithm->hexdigest(word);
 		if (std::find(hashList.begin(), hashList.end(), digest) != hashList.end()) {
 			if (debug) {
 				stdoutMutex->lock();
-				std::cout << INFO << "[Thread #" << threadId <<"]: ";
-				std::cout << "Found match; " << digest << " -> " << word << std::endl;
+				std::cout << INFO << "[Thread #" << threadId <<"]: " << digest << " -> " << word << std::endl;
 				stdoutMutex->unlock();
 			}
 			resultsMutex->lock();
 			(*results)[digest] = word;
 			resultsMutex->unlock();
 		}
-		wordListMutex->lock();
-		if (wordListQueue->empty()) {
-			working = false;
-		}
-		wordListMutex->unlock();
 	}
 	delete algorithm;
 	if (debug) {
