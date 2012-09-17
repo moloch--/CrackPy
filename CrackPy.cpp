@@ -9,6 +9,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <queue>
 #include <map>
 
 #include <execinfo.h>
@@ -38,12 +39,22 @@ void python_init() {
 	}
 }
 
-/* Convert Python list to C++ vector */
-std::vector <std::string> toStringVector(boost::python::list& ls) {
-	std::vector <std::string> data;
+/* Convert Python list to C++ queue */
+std::queue <std::string>* toStringQueue(boost::python::list& ls) {
+	std::queue <std::string>* queue = new std::queue <std::string>();
 	for (int index = 0; index < boost::python::len(ls); ++index) {
 		std::string word = boost::python::extract<std::string>(ls[index]);
-		data.push_back(word);
+		queue->push(word);
+	}
+	return queue;
+}
+
+/* Convert Python list to C++ vector */
+std::vector <std::string> toStringVector(boost::python::list& ls) {
+	std::vector <std::string> data(boost::python::len(ls));
+	for (int index = 0; index < boost::python::len(ls); ++index) {
+		std::string word = boost::python::extract<std::string>(ls[index]);
+		data[index] = word;
 	}
 	return data;
 }
@@ -62,7 +73,7 @@ boost::python::dict md5_list(boost::python::list hashList,
 		boost::python::list wordList, unsigned int threads, bool debug) {
 	signal(SIGSEGV, handler); // Register segfault handler
 	std::vector <std::string> hashes = toStringVector(hashList);
-	std::vector <std::string> words = toStringVector(wordList);
+	std::queue <std::string>* words = toStringQueue(wordList);
 	CrackingEngine* engine = new CrackingEngine("MD5");
 	engine->setDebug(debug);
 	engine->setHashes(hashes);
@@ -70,6 +81,7 @@ boost::python::dict md5_list(boost::python::list hashList,
 	engine->setThreads(threads);
 	std::map<std::string, std::string> resultMap = engine->crack();
 	delete engine;
+	delete words;
 	return toPythonDict(resultMap);
 }
 

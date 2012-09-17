@@ -9,7 +9,6 @@
 
 CrackingEngine::CrackingEngine(std::string hashType): threadCount(1), debug(false) {
 	pyThreadState = PyEval_SaveThread();
-	wordListQueue = new Queue();
 	wordListMutex = new boost::mutex();
 	results = new Results();
 	resultsMutex = new boost::mutex();
@@ -19,7 +18,6 @@ CrackingEngine::CrackingEngine(std::string hashType): threadCount(1), debug(fals
 }
 
 CrackingEngine::~CrackingEngine() {
-	delete wordListQueue;
 	delete wordListMutex;
 	delete results;
 	delete resultsMutex;
@@ -71,13 +69,8 @@ void CrackingEngine::setDebug(bool debug) {
 	}
 }
 
-/*
- * Converts the Python list to a std C++ queue object
- */
-void CrackingEngine::setWords(std::vector<std::string>& wordList) {
-	for (unsigned int index = 0; index < wordList.size(); ++index) {
-		wordListQueue->push(wordList.at(index));
-	}
+void CrackingEngine::setWords(std::queue<std::string>* words) {
+	wordListQueue = words;
 	if (debug) {
 		std::cout << INFO << "Got " << wordListQueue->size() << " words." << std::endl;
 	}
@@ -109,7 +102,7 @@ void CrackingEngine::workerThread(int threadId) {
 		if (std::find(hashList.begin(), hashList.end(), digest) != hashList.end()) {
 			if (debug) {
 				stdoutMutex->lock();
-				std::cout << INFO << "(Thread #" << threadId <<"): ";
+				std::cout << INFO << "[Thread #" << threadId <<"]: ";
 				std::cout << "Found match; " << digest << " -> " << word << std::endl;
 				stdoutMutex->unlock();
 			}
@@ -126,7 +119,7 @@ void CrackingEngine::workerThread(int threadId) {
 	delete algorithm;
 	if (debug) {
 		stdoutMutex->lock();
-		std::cout << INFO << "(Thread #" << threadId <<"): ";
+		std::cout << INFO << "[Thread #" << threadId << "]: ";
 		std::cout << "No more work, exiting." << std::endl;
 		stdoutMutex->unlock();
 	}

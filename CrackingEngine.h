@@ -33,7 +33,7 @@ public:
 	Results crack();
 	void setThreads(unsigned int threadCount);
 	void setDebug(bool debug);
-	void setWords(std::vector<std::string>& words);
+	void setWords(std::queue<std::string>* words);
 	void setHashes(std::vector<std::string>& hashes);
 
 private:
