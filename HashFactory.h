@@ -14,6 +14,7 @@
 #include "Md5.h"
 #include "Md4.h"
 #include "Sha1.h"
+#include "Sha256.h"
 
 class HashFactory {
 

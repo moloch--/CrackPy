@@ -18,4 +18,7 @@ for line in data:
 	hsh = md5.hexdigest()
 	if hsh in hashes:
 		print '\r[$] Found match:', line.replace('\n', ''), '->', hsh
+		hashes.remove(hsh)
+	if len(hashes) == 0:
+		break
 print '[*] Analysis time:', datetime.now() - start

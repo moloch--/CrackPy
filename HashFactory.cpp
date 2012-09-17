@@ -23,6 +23,8 @@ HashAlgorithm* HashFactory::getInstance(std::string name) {
 		return new Md4();
 	} else if (name == "SHA1") {
 		return new Sha1();
+	} else if (name == "SHA256") {
+		return new Sha256();
 	}
 	throw "Algorithm not supported.";
 }

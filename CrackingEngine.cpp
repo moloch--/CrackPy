@@ -112,7 +112,7 @@ void CrackingEngine::workerThread(int threadId) {
 		if (std::find(hashList.begin(), hashList.end(), digest) != hashList.end()) {
 			if (debug) {
 				stdoutMutex->lock();
-				std::cout << INFO << "(Thread #" << threadId <<"): " << digest << " -> " << word << std::endl;
+				std::cout << INFO << "Thread #" << threadId <<" : " << digest << " -> " << word << std::endl;
 				stdoutMutex->unlock();
 			}
 			resultsMutex->lock();
@@ -123,7 +123,7 @@ void CrackingEngine::workerThread(int threadId) {
 	delete algorithm;
 	if (debug) {
 		stdoutMutex->lock();
-		std::cout << INFO << "(Thread #" << threadId << "): Calculated " << count << " hash(es)." << std::endl;
+		std::cout << INFO << "Thread #" << threadId << " : Calculated " << count << " hash(es)." << std::endl;
 		stdoutMutex->unlock();
 	}
 }

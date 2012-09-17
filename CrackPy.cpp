@@ -100,6 +100,11 @@ boost::python::dict sha1_list(boost::python::list hashList,
 	return crackpy("SHA1", hashList, wordList, threads, debug);
 }
 
+boost::python::dict sha256_list(boost::python::list hashList,
+		boost::python::list wordList, unsigned int threads, bool debug) {
+	return crackpy("SHA256", hashList, wordList, threads, debug);
+}
+
 /* Python interface */
 BOOST_PYTHON_MODULE(CrackPy) {
 	using namespace boost::python;
@@ -118,6 +123,12 @@ BOOST_PYTHON_MODULE(CrackPy) {
 	def(
 		"sha1",
 		sha1_list,
+		(arg("hashList"), arg("wordList"), arg("threads") = 1, arg("debug")= false),
+		"Cracks a list of Sha1 hashes."
+	);
+	def(
+		"sha256",
+		sha256_list,
 		(arg("hashList"), arg("wordList"), arg("threads") = 1, arg("debug")= false),
 		"Cracks a list of Sha1 hashes."
 	);
