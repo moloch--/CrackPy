@@ -12,19 +12,14 @@ HashFactory::HashFactory() {
 }
 
 HashFactory::~HashFactory() {
-	/* Factory does not dealloc instances! */
+	/* Blank */
 }
 
-
 HashAlgorithm* HashFactory::getInstance(std::string name) {
-	if (name == "MD5") {
-		return new Md5();
-	} else if (name == "MD4") {
-		return new Md4();
-	} else if (name == "SHA1") {
-		return new Sha1();
-	} else if (name == "SHA256") {
-		return new Sha256();
-	}
-	throw "Algorithm not supported.";
+	HashLib hashlib;
+	hashlib["MD4"] = &create<Md4>;
+	hashlib["MD5"] = &create<Md5>;
+	hashlib["SHA1"] = &create<Sha1>;
+	hashlib["SHA256"] = &create<Sha256>;
+	return hashlib[name]();
 }
