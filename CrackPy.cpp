@@ -33,6 +33,8 @@ void handler(int sig) {
 
 /* Python __init__ function (required) */
 void python_init() {
+	printf("Register fault handler ...\n");
+	signal(SIGSEGV, handler);
 	if(!Py_IsInitialized()) {
 		Py_Initialize();
 		PyEval_InitThreads();
@@ -71,7 +73,6 @@ boost::python::dict toPythonDict(std::map<std::string, std::string> stringMap) {
 
 boost::python::dict crackpy(std::string hashType, boost::python::list& hashList,
 		boost::python::list& wordList, unsigned int threads, bool debug) {
-	signal(SIGSEGV, handler); // Register segfault handler
 	std::vector <std::string> hashes = toStringVector(hashList);
 	std::queue <std::string>* words = toStringQueue(wordList);
 	CrackingEngine* engine = new CrackingEngine(hashType);
@@ -85,14 +86,14 @@ boost::python::dict crackpy(std::string hashType, boost::python::list& hashList,
 	return toPythonDict(resultMap);
 }
 
-boost::python::dict md5_list(boost::python::list hashList,
-		boost::python::list wordList, unsigned int threads, bool debug) {
-	return crackpy("MD5", hashList, wordList, threads, debug);
-}
-
 boost::python::dict md4_list(boost::python::list hashList,
 		boost::python::list wordList, unsigned int threads, bool debug) {
 	return crackpy("MD4", hashList, wordList, threads, debug);
+}
+
+boost::python::dict md5_list(boost::python::list hashList,
+		boost::python::list wordList, unsigned int threads, bool debug) {
+	return crackpy("MD5", hashList, wordList, threads, debug);
 }
 
 boost::python::dict sha1_list(boost::python::list hashList,
@@ -109,16 +110,16 @@ boost::python::dict sha256_list(boost::python::list hashList,
 BOOST_PYTHON_MODULE(CrackPy) {
 	using namespace boost::python;
 	def(
-		"md5",
-		md5_list,
-		(arg("hashList"), arg("wordList"), arg("threads") = 1, arg("debug")= false),
-		"Cracks a list of Md5 hashes."
-	);
-	def(
 		"md4",
 		md4_list,
 		(arg("hashList"), arg("wordList"), arg("threads") = 1, arg("debug")= false),
 		"Cracks a list of Md4 hashes."
+	);
+	def(
+		"md5",
+		md5_list,
+		(arg("hashList"), arg("wordList"), arg("threads") = 1, arg("debug")= false),
+		"Cracks a list of Md5 hashes."
 	);
 	def(
 		"sha1",
